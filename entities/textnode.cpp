@@ -1,0 +1,20 @@
+#include "textnode.h"
+#include "../utils.h"
+
+TextNode::TextNode(const std::string& text, const FontHolder& fonts) :
+    mText(text, fonts.get(Fonts::Main), 20)
+{
+    centerOrigin(mText);
+    mText.setColor(sf::Color::White);
+}
+
+void TextNode::setText(const std::string &text)
+{
+    mText.setString(text);
+    centerOrigin(mText);
+}
+
+void TextNode::drawCurrent(sf::RenderTarget& target, sf::RenderStates states) const
+{
+    target.draw(mText, states);
+}
