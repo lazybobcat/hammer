@@ -101,6 +101,7 @@ private:
     AIController                        mAIController;
     BossController                      mBossController;
     unsigned int                        mPoints;
+    unsigned int                        mTmpPoints;
     TextNode*                           mPointsText;
 };
 

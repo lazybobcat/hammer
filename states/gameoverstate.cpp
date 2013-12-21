@@ -38,8 +38,6 @@ bool GameoverState::handleEvent(const sf::Event &event)
     {
         switch(event.key.code)
         {
-            case sf::Keyboard::Space:
-            case sf::Keyboard::Return:
             case sf::Keyboard::R:
                 requestStackPop();
                 break;

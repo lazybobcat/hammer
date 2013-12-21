@@ -51,6 +51,7 @@ World::World(sf::RenderWindow &window, TextureHolder &textures, FontHolder &font
     mWave(*this, 1),
     mTimer(sf::Time::Zero),
     mPoints(0),
+    mTmpPoints(0),
     mPointsText(nullptr)
 {
     //mSceneTexture.create(mWindow.getSize().x, mWindow.getSize().y);
@@ -85,6 +86,8 @@ void World::retry()
         mCommandQueue.pop();
 
     mSceneGraph.detachAllChildren();
+
+    mTmpPoints = 0;
 
     buildScene();
 
@@ -131,6 +134,16 @@ void World::buildScene()
     std::unique_ptr<Uihealthpoints> php(new Uihealthpoints(mTextures, *mPlayer));
     php->setPosition(sf::Vector2f(110.f, 10.f));
     mSceneLayers[UI]->attachChild(std::move(php));
+
+    std::unique_ptr<TextNode> score(new TextNode("Score: " + toString(mPoints+mTmpPoints), mFonts));
+    score->setPosition(1024-90, (int)mWindow.getSize().y - 40);
+    score->setScale(sf::Vector2f(1.5f, 1.5f));
+    mPointsText = score.get();
+    mSceneLayers[UI]->attachChild(std::move(score));
+
+    if(mWave.number() < 2) {
+        mPointsText->hide();
+    }
 
     // Launch lua scripts
     mScripts.play(Scripts::Loading);
@@ -225,15 +238,13 @@ void World::nextWave()
 
     // Scores
     mPoints += 50;
+    mPoints += mTmpPoints;
+    mTmpPoints = 0;
 
-    if(mWave.number() == 2)
+    if(mWave.number() >= 2 && mPointsText)
     {
         // UI
-        std::unique_ptr<TextNode> score(new TextNode("Score: " + toString(mPoints), mFonts));
-        score->setPosition(1024-90, (int)mWindow.getSize().y - 40);
-        score->setScale(sf::Vector2f(1.5f, 1.5f));
-        mPointsText = score.get();
-        mSceneLayers[UI]->attachChild(std::move(score));
+        mPointsText->show();
     }
 
     // Screenshot
@@ -289,15 +300,16 @@ void World::update(sf::Time dt)
         return;
     }
 
+    // Score
+    if(mPointsText)
+    {
+        mPointsText->setText("Score: " + toString(mPoints+mTmpPoints));
+    }
+
     // Remove useless entities
     destroyEntitiesOutsideView();
     mSceneGraph.removeWrecks();
 
-    // Score
-    if(mPointsText)
-    {
-        mPointsText->setText("Score: " + toString(mPoints));
-    }
 
     // Set the listener position
     mSounds.setListenerPosition(mPlayer->getWorldPosition());
@@ -325,7 +337,7 @@ void World::handleCollisions()
                 if(enemy.isDestroyed())
                 {
                     // SCores
-                    mPoints += enemy.getMaxHealthpoints();
+                    mTmpPoints += enemy.getMaxHealthpoints();
                     std::cout << "Enemy killed !" << std::endl;
 
                     mCreatures.erase(&enemy);

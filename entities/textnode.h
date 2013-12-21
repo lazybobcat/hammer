@@ -13,12 +13,15 @@ public:
     TextNode(const std::string& text, const FontHolder& fonts);
 
     void            setText(const std::string& text);
+    void            show();
+    void            hide();
 
 private:
     virtual void    drawCurrent(sf::RenderTarget &target, sf::RenderStates states) const;
 
 private:
     sf::Text        mText;
+    bool            mShow;
 };
 
 #endif // TEXTNODE_H
